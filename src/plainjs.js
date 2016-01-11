@@ -12,10 +12,15 @@
  *       3.2 second, allow any well formed equation using the given operators with the addition of parentheses
  *       
  */
-var Equation=function() {
+
+
+// I added document.ready to ensure that the page is ready before any of this tries to run
+$(document).ready(function() {
+    // I set .operator to '+' because it is the default selction from the select menu 
+var Equation = function() {
     this.operand1 = null;
     this.operand2 = null;
-    this.operator = null;
+    this.operator = '+';
     this.answer = null;
 };
 
@@ -41,10 +46,24 @@ Equation.prototype.compute = function() {
 };
 
 Equation.prototype.updateOperand = function(event) {
-    if (event.currentTarget.id === '#operand1')
-        this.operand1 = parseFloat($(event.currentTarget).val());
-    else this.operand2 = parseFloat($(event.currentTarget).val());
-    this.compute();
+    // removed the # from the id it is checking since .id already indicates that
+    if (event.currentTarget.id === 'operand1') {
+        // I added the check in here for it to be undefined since the user could delete out the entry and cause it to spit out NaN
+        if (eval($(event.currentTarget).val()) == undefined) {
+            this.operand1 = 0;
+        } else {
+            // I changed it from parseInt to eval to be able to evaulate a free form equation
+            this.operand1 = eval($(event.currentTarget).val());
+        }
+    }
+    else { 
+        if (eval($(event.currentTarget).val()) == undefined) {
+            this.operand2 = 0;
+        } else {
+            this.operand2 = eval($(event.currentTarget).val());
+        }
+    }
+   this.compute();
 };
 
 Equation.prototype.updateOperator = function(event) {
@@ -56,7 +75,15 @@ Equation.prototype.updateOperator = function(event) {
     // WARNING: don't treat equation as a global variable in any changes you make
     var equation = new Equation();
     
-    $('#operator').change(equation.updateOperator);
+    // Added .bind() to the equation becuase that ties it to the specific instance of equation
+    $('#operator').change(equation.updateOperator.bind(equation));
     
-    $('.operand').change(equation.updateOperand);
+    $('.operand').change(equation.updateOperand.bind(equation));
+    
 })();
+
+});
+
+// This specific .prototype pattern breaks down the object creation into multiple steps.
+// The first method defines the constructor and propeties
+// Then we are able to build on top of that and be able to call any of the related methods at any needed time for this particular object
